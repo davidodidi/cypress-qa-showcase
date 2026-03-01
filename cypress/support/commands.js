@@ -18,8 +18,8 @@ Cypress.Commands.add("loginUI", (userType = "standard") => {
   const password = Cypress.env("PASSWORD");
 
   cy.visit("/");
-  cy.get("[data-test='username']").clear().type(username);
-  cy.get("[data-test='password']").clear().type(password, { log: false }); // mask password in logs
+  cy.get("[data-test='username']").type(username);
+cy.get("[data-test='password']").type(password, { log: false });
   cy.get("[data-test='login-button']").click();
 });
 
