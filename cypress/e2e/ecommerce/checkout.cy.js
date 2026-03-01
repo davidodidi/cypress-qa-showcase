@@ -18,12 +18,15 @@ describe("🛒 E-Commerce — Product Browsing & Checkout", { testIsolation: fal
         cy.get("[data-test='back-to-products']").click();
         cy.get(".inventory_list", { timeout: 15000 }).should("be.visible");
       } else {
-        // Use burger menu from any page including inventory itself
+        // Wait for menu to be fully closed before trying to open it again
+        cy.get(".bm-menu-wrap").should("have.attr", "aria-hidden", "true");
+        cy.wait(500);
         cy.get("#react-burger-menu-btn", { timeout: 10000 }).click({ force: true });
-        // Wait for menu to fully open before clicking All Items
-        cy.get(".bm-menu-wrap").should("have.attr", "aria-hidden", "false");
-        cy.get("#inventory_sidebar_link").should("be.visible").click();
-        cy.get(".bm-overlay").should("not.exist");
+        // Wait for menu to fully open
+        cy.get(".bm-menu-wrap", { timeout: 8000 }).should("have.attr", "aria-hidden", "false");
+        cy.get("#inventory_sidebar_link").click({ force: true });
+        // Wait for menu to close after clicking All Items
+        cy.get(".bm-menu-wrap").should("have.attr", "aria-hidden", "true");
         cy.get(".inventory_list", { timeout: 15000 }).should("be.visible");
       }
     });
