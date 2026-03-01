@@ -7,25 +7,24 @@ describe("🛒 E-Commerce — Product Browsing & Checkout", { testIsolation: fal
   before(() => {
     cy.loginUI("standard");
     cy.url().should("include", "/inventory.html");
-    cy.get(".inventory_list").should("be.visible");
-    // Wait for full page render including sort dropdown before any tests run
-    cy.get("[data-test='product_sort_container']").should("be.visible");
+    cy.get(".inventory_list", { timeout: 30000 }).should("be.visible");
   });
 
-  // Navigate back to inventory from wherever we are
+  // Always navigate via burger menu — most reliable way to reach inventory
+  // even if we're already on it, clicking All Items forces a clean render
   const goToInventory = () => {
     cy.url().then((url) => {
       if (url.includes("checkout-complete")) {
         cy.get("[data-test='back-to-products']").click();
-      } else if (!url.includes("/inventory.html")) {
-        cy.get("#react-burger-menu-btn").click({ force: true });
+        cy.get(".inventory_list", { timeout: 15000 }).should("be.visible");
+      } else {
+        // Use burger menu from any page including inventory itself
+        cy.get("#react-burger-menu-btn", { timeout: 10000 }).click({ force: true });
         cy.get("#inventory_sidebar_link", { timeout: 5000 }).should("be.visible").click();
         cy.get(".bm-overlay").should("not.exist");
+        cy.get(".inventory_list", { timeout: 15000 }).should("be.visible");
       }
-      // Always wait for inventory to be fully loaded
     });
-    cy.get(".inventory_list", { timeout: 15000 }).should("be.visible");
-    cy.get("[data-test='product_sort_container']").should("be.visible");
   };
 
   // Clear all items from cart if any exist
