@@ -14,14 +14,11 @@ describe("🛒 E-Commerce — Product Browsing & Checkout", { testIsolation: fal
   const goToInventory = () => {
     cy.url().then((url) => {
       if (url.includes("/inventory.html")) {
-        // Already there — just make sure it's fully loaded
         cy.get(".inventory_list").should("be.visible");
       } else if (url.includes("checkout-complete")) {
-        // Order complete page — use the back to products button
         cy.get("[data-test='back-to-products']").click();
         cy.get(".inventory_list").should("be.visible");
       } else {
-        // Anywhere else — use burger menu
         cy.get("#react-burger-menu-btn").click({ force: true });
         cy.get("#inventory_sidebar_link", { timeout: 5000 }).should("be.visible").click();
         cy.get(".bm-overlay").should("not.exist");
@@ -47,8 +44,18 @@ describe("🛒 E-Commerce — Product Browsing & Checkout", { testIsolation: fal
   };
 
   // ── Product Catalog ────────────────────────────────────────────────────────
-  // No before() needed here — we're already on inventory after login
   context("Product Catalog", () => {
+
+    // Before each sort test, make sure we're on inventory with sort dropdown visible
+    // This handles retries — when a test retries, the page state needs to be confirmed
+    beforeEach(() => {
+      cy.get("body").then(($body) => {
+        if (!$body.find("[data-test='product_sort_container']").length) {
+          goToInventory();
+        }
+      });
+      cy.get("[data-test='product_sort_container']", { timeout: 10000 }).should("be.visible");
+    });
 
     it("should display 6 products on inventory page", () => {
       InventoryPage.assertProductCount(6);
