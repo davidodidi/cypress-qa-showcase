@@ -4,15 +4,20 @@ import CheckoutPage from "../../support/pages/CheckoutPage";
 
 describe("🛒 E-Commerce — Product Browsing & Checkout", () => {
 
-  // Login ONCE for the entire suite — SauceDemo rate-limits CI runners
+  // Login ONCE for the entire suite
   before(() => {
     cy.loginUI("standard");
   });
 
-  // Helper: go back to inventory without a full cy.visit()
+  // Navigate to inventory using the Continue Shopping / back navigation
+  // Avoids cy.visit() which triggers SauceDemo rate limiting
   const goToInventory = () => {
-    cy.window().then((win) => {
-      win.location.href = "/inventory.html";
+    cy.get("body").then(($body) => {
+      if ($body.find("#react-burger-menu-btn").length) {
+        // We're on a SauceDemo page — use burger menu → All Items
+        cy.get("#react-burger-menu-btn").click();
+        cy.get("#inventory_sidebar_link").click();
+      }
     });
     cy.get(".inventory_list", { timeout: 15000 }).should("be.visible");
   };
@@ -42,13 +47,14 @@ describe("🛒 E-Commerce — Product Browsing & Checkout", () => {
     });
 
     it("should navigate to product detail page", () => {
-      InventoryPage.sortBy("az"); // reset sort
+      InventoryPage.sortBy("az");
       InventoryPage.openProductByName("Sauce Labs Backpack");
       cy.url().should("include", "/inventory-item.html");
       cy.get(".inventory_details_name").should("contain.text", "Sauce Labs Backpack");
       cy.get(".inventory_details_price").should("be.visible");
       cy.get(".inventory_details_img").should("be.visible");
-      goToInventory(); // back to inventory for next tests
+      cy.go("back");
+      cy.get(".inventory_list").should("be.visible");
     });
   });
 

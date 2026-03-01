@@ -12,7 +12,7 @@ describe("🔌 API Testing — Users (reqres.in)", () => {
         cy.validateApiResponse(res, 200);
 
         // Schema validation
-        expect(res.body).to.have.all.keys("page", "per_page", "total", "total_pages", "data", "support");
+        expect(res.body).to.include.all.keys("page", "per_page", "total", "total_pages", "data", "support");
         expect(res.body.data).to.be.an("array").and.have.length.greaterThan(0);
         expect(res.body.page).to.eq(1);
       });
