@@ -1,13 +1,11 @@
 // ─── cypress/e2e/ecommerce/checkout.cy.js ────────────────────────────────────
-// End-to-end ecommerce test suite: browsing, cart management, and checkout.
-// Demonstrates: POM, cy.session(), data fixtures, assertions on computed values.
-
 import InventoryPage from "../../support/pages/InventoryPage";
 import CheckoutPage from "../../support/pages/CheckoutPage";
 
 describe("🛒 E-Commerce — Product Browsing & Checkout", () => {
-  // Use session to avoid re-login between tests
-  beforeEach(() => {
+
+  // Login ONCE before all tests — avoids hitting SauceDemo on every test
+  before(() => {
     cy.loginSession("standard");
   });
 
@@ -46,6 +44,10 @@ describe("🛒 E-Commerce — Product Browsing & Checkout", () => {
 
   // ── Cart Management ───────────────────────────────────────────────────────
   context("Cart Management", () => {
+    beforeEach(() => {
+      cy.visit("/inventory.html");
+    });
+
     it("should add a single product and update cart badge", () => {
       InventoryPage.addProductToCartByName("Sauce Labs Backpack");
       InventoryPage.assertCartBadge(1);
@@ -69,7 +71,6 @@ describe("🛒 E-Commerce — Product Browsing & Checkout", () => {
       const product = "Sauce Labs Fleece Jacket";
       InventoryPage.addProductToCartByName(product);
       InventoryPage.goToCart();
-
       cy.get(".cart_item").should("have.length", 1);
       cy.get(".inventory_item_name").should("contain.text", product);
     });
@@ -78,42 +79,28 @@ describe("🛒 E-Commerce — Product Browsing & Checkout", () => {
   // ── Checkout Flow ─────────────────────────────────────────────────────────
   context("Checkout — Happy Path", () => {
     beforeEach(() => {
-      // Add product and navigate to cart before each checkout test
+      cy.visit("/inventory.html");
       InventoryPage.addProductToCartByName("Sauce Labs Backpack");
       InventoryPage.goToCart();
       cy.get("[data-test='checkout']").click();
     });
 
     it("should complete checkout with valid shipping info", () => {
-      CheckoutPage.completeShippingInfo({
-        firstName: "David",
-        lastName:  "QA",
-        postalCode: "M5V 3L9",
-      });
-
+      CheckoutPage.completeShippingInfo({ firstName: "David", lastName: "QA", postalCode: "M5V 3L9" });
       CheckoutPage.assertSummaryVisible();
       CheckoutPage.clickFinish();
       CheckoutPage.assertOrderComplete();
     });
 
     it("should display correct order summary on step 2", () => {
-      CheckoutPage.completeShippingInfo({
-        firstName: "David",
-        lastName:  "QA",
-        postalCode: "M5V 3L9",
-      });
-
-      // Assert items are shown
+      CheckoutPage.completeShippingInfo({ firstName: "David", lastName: "QA", postalCode: "M5V 3L9" });
       CheckoutPage.cartItems.should("have.length", 1);
       CheckoutPage.assertSummaryVisible();
-
-      // Assert total = subtotal + tax (computed value assertion)
       CheckoutPage.summarySubtotal.invoke("text").then((subtotalText) => {
         CheckoutPage.summaryTax.invoke("text").then((taxText) => {
           const subtotal = parseFloat(subtotalText.replace("Item total: $", ""));
           const tax      = parseFloat(taxText.replace("Tax: $", ""));
           const expected = parseFloat((subtotal + tax).toFixed(2));
-
           CheckoutPage.getTotalAmount().should("eq", expected);
         });
       });
@@ -123,12 +110,13 @@ describe("🛒 E-Commerce — Product Browsing & Checkout", () => {
   // ── Checkout Validation ───────────────────────────────────────────────────
   context("Checkout — Form Validation", () => {
     const validationCases = [
-      { scenario: "missing first name", firstName: "",      lastName: "QA",    postalCode: "12345", error: "First Name is required" },
-      { scenario: "missing last name",  firstName: "David", lastName: "",      postalCode: "12345", error: "Last Name is required" },
-      { scenario: "missing postal",     firstName: "David", lastName: "QA",    postalCode: "",      error: "Postal Code is required" },
+      { scenario: "missing first name", firstName: "",      lastName: "QA", postalCode: "12345", error: "First Name is required" },
+      { scenario: "missing last name",  firstName: "David", lastName: "",   postalCode: "12345", error: "Last Name is required" },
+      { scenario: "missing postal",     firstName: "David", lastName: "QA", postalCode: "",      error: "Postal Code is required" },
     ];
 
     beforeEach(() => {
+      cy.visit("/inventory.html");
       InventoryPage.addProductToCartByName("Sauce Labs Onesie");
       InventoryPage.goToCart();
       cy.get("[data-test='checkout']").click();

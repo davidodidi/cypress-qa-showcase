@@ -17,7 +17,7 @@ describe("✅ Todo App — Network Intercept & Stubbing", () => {
     });
   };
 
-  beforeEach(() => {
+  before(() => {
     // Need an active browser page for intercepts to work
     cy.visit("/");
   });
