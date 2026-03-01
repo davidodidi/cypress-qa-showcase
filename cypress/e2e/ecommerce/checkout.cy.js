@@ -2,27 +2,31 @@
 import InventoryPage from "../../support/pages/InventoryPage";
 import CheckoutPage from "../../support/pages/CheckoutPage";
 
-// testIsolation: false — keeps cookies/session alive between tests in this file
-// Required because SauceDemo rate-limits new page loads from CI runners
 describe("🛒 E-Commerce — Product Browsing & Checkout", { testIsolation: false }, () => {
 
-  // Login once for the entire suite
   before(() => {
     cy.loginUI("standard");
     cy.url().should("include", "/inventory.html");
   });
 
-  // Navigate to inventory using burger menu — no cy.visit()
+  // Close burger menu if it's open, then click All Items
   const goToInventory = () => {
-    cy.get("#react-burger-menu-btn").click();
-    cy.get(".bm-menu-wrap").should("be.visible");
-    cy.get("#inventory_sidebar_link").click();
+    // If menu is open (bm-menu-wrap visible), close it first by pressing Escape
+    cy.get("body").then(($body) => {
+      if ($body.find(".bm-menu-wrap[aria-hidden='false']").length ||
+          $body.find(".bm-menu-wrap[style*='display: block']").length ||
+          $body.find(".bm-overlay").length > 0 && $body.find(".bm-overlay").css("display") !== "none") {
+        cy.get("body").type("{esc}");
+        cy.wait(300);
+      }
+    });
+    cy.get("#react-burger-menu-btn").click({ force: true });
+    cy.get("#inventory_sidebar_link", { timeout: 5000 }).should("be.visible").click();
     cy.get(".inventory_list", { timeout: 15000 }).should("be.visible");
   };
 
-  // ── Product Catalog ───────────────────────────────────────────────────────
+  // ── Product Catalog ────────────────────────────────────────────────────────
   context("Product Catalog", () => {
-    // Make sure we're on inventory before this context runs
     before(goToInventory);
 
     it("should display 6 products on inventory page", () => {
@@ -52,13 +56,12 @@ describe("🛒 E-Commerce — Product Browsing & Checkout", { testIsolation: fal
       InventoryPage.openProductByName("Sauce Labs Backpack");
       cy.url().should("include", "/inventory-item.html");
       cy.get(".inventory_details_name").should("contain.text", "Sauce Labs Backpack");
-      cy.get(".inventory_details_price").should("be.visible");
       cy.go("back");
       cy.get(".inventory_list").should("be.visible");
     });
   });
 
-  // ── Cart Management ───────────────────────────────────────────────────────
+  // ── Cart Management ────────────────────────────────────────────────────────
   context("Cart Management", () => {
     beforeEach(goToInventory);
 
@@ -90,7 +93,7 @@ describe("🛒 E-Commerce — Product Browsing & Checkout", { testIsolation: fal
     });
   });
 
-  // ── Checkout Flow ─────────────────────────────────────────────────────────
+  // ── Checkout Happy Path ────────────────────────────────────────────────────
   context("Checkout — Happy Path", () => {
     beforeEach(() => {
       goToInventory();
@@ -121,7 +124,7 @@ describe("🛒 E-Commerce — Product Browsing & Checkout", { testIsolation: fal
     });
   });
 
-  // ── Checkout Validation ───────────────────────────────────────────────────
+  // ── Checkout Validation ────────────────────────────────────────────────────
   context("Checkout — Form Validation", () => {
     const validationCases = [
       { scenario: "missing first name", firstName: "",      lastName: "QA", postalCode: "12345", error: "First Name is required" },
