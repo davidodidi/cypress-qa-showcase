@@ -4,7 +4,7 @@
 // ─── Authentication ───────────────────────────────────────────────────────────
 
 /**
- * Login via UI with credentials stored in cypress.env
+ * Login via UI
  * @param {string} userType - 'standard' | 'locked' | 'performance'
  */
 Cypress.Commands.add("loginUI", (userType = "standard") => {
@@ -14,30 +14,21 @@ Cypress.Commands.add("loginUI", (userType = "standard") => {
     performance: Cypress.env("PERFORMANCE_USER"),
   };
 
-  const username = users[userType] ?? userType; // allow passing raw username
+  const username = users[userType] ?? userType;
   const password = Cypress.env("PASSWORD");
 
   cy.visit("/");
   cy.get("[data-test='username']").type(username);
-  cy.get("[data-test='password']").type(password, { log: false }); // mask password in logs
+  cy.get("[data-test='password']").type(password, { log: false });
   cy.get("[data-test='login-button']").click();
 });
 
 /**
- * Login by setting the session cookie directly — fast and CI-stable.
- * Avoids cy.session() page load timeouts on GitHub Actions.
+ * Login via full UI login — stable in CI, no session caching needed
  */
 Cypress.Commands.add("loginSession", (userType = "standard") => {
-  const users = {
-    standard:    Cypress.env("STANDARD_USER"),
-    locked:      Cypress.env("LOCKED_USER"),
-    performance: Cypress.env("PERFORMANCE_USER"),
-  };
-  const username = users[userType] ?? userType;
-
-  // Set the session cookie directly — same as what SauceDemo sets after login
-  cy.setCookie("session-username", username);
-  cy.visit("/inventory.html");
+  cy.loginUI(userType);
+  cy.url().should("include", "/inventory.html");
 });
 
 // ─── Navigation ───────────────────────────────────────────────────────────────
@@ -77,18 +68,10 @@ Cypress.Commands.add("openCart", () => {
 
 // ─── Assertions ───────────────────────────────────────────────────────────────
 
-/**
- * Assert that a toast / error message is visible
- * @param {string} text
- */
 Cypress.Commands.add("assertError", (text) => {
   cy.get("[data-test='error']").should("be.visible").and("contain.text", text);
 });
 
-/**
- * Sort products and assert order
- * @param {'az'|'za'|'lohi'|'hilo'} option
- */
 Cypress.Commands.add("sortProductsBy", (option) => {
   const map = { az: "az", za: "za", lohi: "lohi", hilo: "hilo" };
   cy.get("[data-test='product_sort_container']").select(map[option]);

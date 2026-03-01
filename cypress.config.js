@@ -7,9 +7,10 @@ module.exports = defineConfig({
   viewportHeight: 720,
   video: true,
   screenshotOnRunFailure: true,
-  defaultCommandTimeout: 8000,
-  requestTimeout: 10000,
-  responseTimeout: 10000,
+  defaultCommandTimeout: 10000,
+  pageLoadTimeout: 120000,
+  requestTimeout: 15000,
+  responseTimeout: 15000,
   retries: {
     runMode: 2,    // retry failed tests in CI
     openMode: 0,
@@ -39,7 +40,7 @@ module.exports = defineConfig({
     PASSWORD: "secret_sauce",
 
     // API keys placeholder
-    API_KEY: "reqres-free-v1",
+    API_KEY: "reqres-free-v1", // overridden by CYPRESS_API_KEY secret in CI
   },
 
   e2e: {
@@ -63,7 +64,7 @@ module.exports = defineConfig({
 
       // ── Read environment from CI if available ─────────────────
       if (process.env.BASE_URL) config.env.BASE_URL = process.env.BASE_URL;
-      if (process.env.API_KEY)  config.env.API_KEY  = process.env.API_KEY;
+      if (process.env.CYPRESS_API_KEY) config.env.API_KEY = process.env.CYPRESS_API_KEY;
 
       return config;
     },
