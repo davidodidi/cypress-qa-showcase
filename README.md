@@ -161,8 +161,8 @@ The GitHub Actions workflow (`.github/workflows/cypress.yml`) provides:
 ## 👤 Author
 
 **David** — QA Automation Engineer  
-Java • Selenium • Cypress • RestAssured • Python • CI/CD  
+Java • Selenium • Cypress • RestAssured • Python • Playwright • CI/CD  
 
 ---
 
-*This project is part of a QA Automation Portfolio — built to demonstrate production-level testing skills across multiple disciplines.*
+*This project is part of a QA Automation Portfolio - built to demonstrate production-level testing skills across multiple disciplines.*
