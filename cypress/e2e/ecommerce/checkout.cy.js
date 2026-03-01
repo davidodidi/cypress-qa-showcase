@@ -20,7 +20,9 @@ describe("🛒 E-Commerce — Product Browsing & Checkout", { testIsolation: fal
       } else {
         // Use burger menu from any page including inventory itself
         cy.get("#react-burger-menu-btn", { timeout: 10000 }).click({ force: true });
-        cy.get("#inventory_sidebar_link", { timeout: 5000 }).should("be.visible").click();
+        // Wait for menu to fully open before clicking All Items
+        cy.get(".bm-menu-wrap").should("have.attr", "aria-hidden", "false");
+        cy.get("#inventory_sidebar_link").should("be.visible").click();
         cy.get(".bm-overlay").should("not.exist");
         cy.get(".inventory_list", { timeout: 15000 }).should("be.visible");
       }
