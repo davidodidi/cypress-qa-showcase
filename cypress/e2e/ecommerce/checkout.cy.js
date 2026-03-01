@@ -34,6 +34,7 @@ describe("🛒 E-Commerce — Product Browsing & Checkout", { testIsolation: fal
     });
 
     cy.get(".inventory_list", { timeout: 15000 }).should("be.visible");
+    cy.get("[data-test='product_sort_container']", { timeout: 15000 }).should("be.visible");
   };
 
   // Clear all items from cart if any exist
