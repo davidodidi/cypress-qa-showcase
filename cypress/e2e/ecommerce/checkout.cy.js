@@ -9,20 +9,29 @@ describe("🛒 E-Commerce — Product Browsing & Checkout", { testIsolation: fal
     cy.url().should("include", "/inventory.html");
   });
 
-  // Close burger menu if it's open, then click All Items
+  // Navigate via burger menu and wait for menu to fully close
   const goToInventory = () => {
-    // If menu is open (bm-menu-wrap visible), close it first by pressing Escape
-    cy.get("body").then(($body) => {
-      if ($body.find(".bm-menu-wrap[aria-hidden='false']").length ||
-          $body.find(".bm-menu-wrap[style*='display: block']").length ||
-          $body.find(".bm-overlay").length > 0 && $body.find(".bm-overlay").css("display") !== "none") {
-        cy.get("body").type("{esc}");
-        cy.wait(300);
-      }
-    });
     cy.get("#react-burger-menu-btn").click({ force: true });
     cy.get("#inventory_sidebar_link", { timeout: 5000 }).should("be.visible").click();
+    // Wait for menu overlay to disappear before interacting with page
+    cy.get(".bm-overlay").should("not.exist");
     cy.get(".inventory_list", { timeout: 15000 }).should("be.visible");
+  };
+
+  // Clear cart by removing all items that were added (cart persists with testIsolation:false)
+  const clearCart = () => {
+    cy.get("body").then(($body) => {
+      if ($body.find(".shopping_cart_badge").length) {
+        cy.get(".shopping_cart_link").click();
+        cy.get(".cart_item").each(() => {
+          cy.get(".cart_item button").first().click();
+        });
+        cy.get("#react-burger-menu-btn").click({ force: true });
+        cy.get("#inventory_sidebar_link").click();
+        cy.get(".bm-overlay").should("not.exist");
+        cy.get(".inventory_list").should("be.visible");
+      }
+    });
   };
 
   // ── Product Catalog ────────────────────────────────────────────────────────
@@ -63,7 +72,10 @@ describe("🛒 E-Commerce — Product Browsing & Checkout", { testIsolation: fal
 
   // ── Cart Management ────────────────────────────────────────────────────────
   context("Cart Management", () => {
-    beforeEach(goToInventory);
+    beforeEach(() => {
+      goToInventory();
+      clearCart();
+    });
 
     it("should add a single product and update cart badge", () => {
       InventoryPage.addProductToCartByName("Sauce Labs Backpack");
@@ -97,6 +109,7 @@ describe("🛒 E-Commerce — Product Browsing & Checkout", { testIsolation: fal
   context("Checkout — Happy Path", () => {
     beforeEach(() => {
       goToInventory();
+      clearCart();
       InventoryPage.addProductToCartByName("Sauce Labs Backpack");
       InventoryPage.goToCart();
       cy.get("[data-test='checkout']").click();
@@ -134,6 +147,7 @@ describe("🛒 E-Commerce — Product Browsing & Checkout", { testIsolation: fal
 
     beforeEach(() => {
       goToInventory();
+      clearCart();
       InventoryPage.addProductToCartByName("Sauce Labs Onesie");
       InventoryPage.goToCart();
       cy.get("[data-test='checkout']").click();
