@@ -8,23 +8,24 @@ describe("🛒 E-Commerce — Product Browsing & Checkout", { testIsolation: fal
     cy.loginUI("standard");
     cy.url().should("include", "/inventory.html");
     cy.get(".inventory_list").should("be.visible");
+    // Wait for full page render including sort dropdown before any tests run
+    cy.get("[data-test='product_sort_container']").should("be.visible");
   });
 
   // Navigate back to inventory from wherever we are
   const goToInventory = () => {
     cy.url().then((url) => {
-      if (url.includes("/inventory.html")) {
-        cy.get(".inventory_list").should("be.visible");
-      } else if (url.includes("checkout-complete")) {
+      if (url.includes("checkout-complete")) {
         cy.get("[data-test='back-to-products']").click();
-        cy.get(".inventory_list").should("be.visible");
-      } else {
+      } else if (!url.includes("/inventory.html")) {
         cy.get("#react-burger-menu-btn").click({ force: true });
         cy.get("#inventory_sidebar_link", { timeout: 5000 }).should("be.visible").click();
         cy.get(".bm-overlay").should("not.exist");
-        cy.get(".inventory_list", { timeout: 15000 }).should("be.visible");
       }
+      // Always wait for inventory to be fully loaded
     });
+    cy.get(".inventory_list", { timeout: 15000 }).should("be.visible");
+    cy.get("[data-test='product_sort_container']").should("be.visible");
   };
 
   // Clear all items from cart if any exist
@@ -46,15 +47,8 @@ describe("🛒 E-Commerce — Product Browsing & Checkout", { testIsolation: fal
   // ── Product Catalog ────────────────────────────────────────────────────────
   context("Product Catalog", () => {
 
-    // Before each sort test, make sure we're on inventory with sort dropdown visible
-    // This handles retries — when a test retries, the page state needs to be confirmed
     beforeEach(() => {
-      cy.get("body").then(($body) => {
-        if (!$body.find("[data-test='product_sort_container']").length) {
-          goToInventory();
-        }
-      });
-      cy.get("[data-test='product_sort_container']", { timeout: 10000 }).should("be.visible");
+      goToInventory();
     });
 
     it("should display 6 products on inventory page", () => {
