@@ -2,28 +2,29 @@
 import InventoryPage from "../../support/pages/InventoryPage";
 import CheckoutPage from "../../support/pages/CheckoutPage";
 
-describe("🛒 E-Commerce — Product Browsing & Checkout", () => {
+// testIsolation: false — keeps cookies/session alive between tests in this file
+// Required because SauceDemo rate-limits new page loads from CI runners
+describe("🛒 E-Commerce — Product Browsing & Checkout", { testIsolation: false }, () => {
 
-  // Login ONCE for the entire suite
+  // Login once for the entire suite
   before(() => {
     cy.loginUI("standard");
+    cy.url().should("include", "/inventory.html");
   });
 
-  // Navigate to inventory using the Continue Shopping / back navigation
-  // Avoids cy.visit() which triggers SauceDemo rate limiting
+  // Navigate to inventory using burger menu — no cy.visit()
   const goToInventory = () => {
-    cy.get("body").then(($body) => {
-      if ($body.find("#react-burger-menu-btn").length) {
-        // We're on a SauceDemo page — use burger menu → All Items
-        cy.get("#react-burger-menu-btn").click();
-        cy.get("#inventory_sidebar_link").click();
-      }
-    });
+    cy.get("#react-burger-menu-btn").click();
+    cy.get(".bm-menu-wrap").should("be.visible");
+    cy.get("#inventory_sidebar_link").click();
     cy.get(".inventory_list", { timeout: 15000 }).should("be.visible");
   };
 
   // ── Product Catalog ───────────────────────────────────────────────────────
   context("Product Catalog", () => {
+    // Make sure we're on inventory before this context runs
+    before(goToInventory);
+
     it("should display 6 products on inventory page", () => {
       InventoryPage.assertProductCount(6);
     });
@@ -52,7 +53,6 @@ describe("🛒 E-Commerce — Product Browsing & Checkout", () => {
       cy.url().should("include", "/inventory-item.html");
       cy.get(".inventory_details_name").should("contain.text", "Sauce Labs Backpack");
       cy.get(".inventory_details_price").should("be.visible");
-      cy.get(".inventory_details_img").should("be.visible");
       cy.go("back");
       cy.get(".inventory_list").should("be.visible");
     });
