@@ -7,25 +7,30 @@ describe("🛒 E-Commerce — Product Browsing & Checkout", { testIsolation: fal
   before(() => {
     cy.loginUI("standard");
     cy.url().should("include", "/inventory.html");
+    cy.get(".inventory_list").should("be.visible");
   });
 
-  // Navigate to inventory via burger menu, wait for overlay to fully close
+  // Navigate back to inventory from wherever we are
   const goToInventory = () => {
-    // If on checkout-complete page, use the back button instead of burger menu
     cy.url().then((url) => {
-      if (url.includes("checkout-complete")) {
+      if (url.includes("/inventory.html")) {
+        // Already there — just make sure it's fully loaded
+        cy.get(".inventory_list").should("be.visible");
+      } else if (url.includes("checkout-complete")) {
+        // Order complete page — use the back to products button
         cy.get("[data-test='back-to-products']").click();
+        cy.get(".inventory_list").should("be.visible");
       } else {
+        // Anywhere else — use burger menu
         cy.get("#react-burger-menu-btn").click({ force: true });
         cy.get("#inventory_sidebar_link", { timeout: 5000 }).should("be.visible").click();
+        cy.get(".bm-overlay").should("not.exist");
+        cy.get(".inventory_list", { timeout: 15000 }).should("be.visible");
       }
     });
-    // Wait for burger menu overlay to fully disappear
-    cy.get(".bm-overlay").should("not.exist");
-    cy.get(".inventory_list", { timeout: 15000 }).should("be.visible");
   };
 
-  // Clear all items from cart
+  // Clear all items from cart if any exist
   const clearCart = () => {
     cy.get("body").then(($body) => {
       if ($body.find(".shopping_cart_badge").length) {
@@ -42,13 +47,8 @@ describe("🛒 E-Commerce — Product Browsing & Checkout", { testIsolation: fal
   };
 
   // ── Product Catalog ────────────────────────────────────────────────────────
+  // No before() needed here — we're already on inventory after login
   context("Product Catalog", () => {
-    before(() => {
-      goToInventory();
-      // Explicitly wait for the menu to be fully gone before tests run
-      cy.get(".bm-overlay").should("not.exist");
-      cy.get("[data-test='product_sort_container']").should("be.visible");
-    });
 
     it("should display 6 products on inventory page", () => {
       InventoryPage.assertProductCount(6);
@@ -167,9 +167,8 @@ describe("🛒 E-Commerce — Product Browsing & Checkout", { testIsolation: fal
 
     validationCases.forEach(({ scenario, firstName, lastName, postalCode, error }) => {
       it(`should show error for: ${scenario}`, () => {
-        // Only type if value is not empty — cy.type() rejects empty strings
-        if (firstName) cy.get("[data-test='firstName']").clear().type(firstName);
-        if (lastName)  cy.get("[data-test='lastName']").clear().type(lastName);
+        if (firstName)  cy.get("[data-test='firstName']").clear().type(firstName);
+        if (lastName)   cy.get("[data-test='lastName']").clear().type(lastName);
         if (postalCode) cy.get("[data-test='postalCode']").clear().type(postalCode);
         CheckoutPage.clickContinue();
         CheckoutPage.assertShippingError(error);
