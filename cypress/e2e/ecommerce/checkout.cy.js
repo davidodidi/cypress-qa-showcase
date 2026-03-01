@@ -8,15 +8,16 @@ describe("🛒 E-Commerce — Product Browsing & Checkout", { testIsolation: fal
     cy.loginUI("standard");
     cy.url().should("include", "/inventory.html");
     cy.get(".inventory_list", { timeout: 30000 }).should("be.visible");
+    cy.get("[data-test='product_sort_container']", { timeout: 30000 }).should("be.visible");
   });
 
-  // Navigate to inventory using window.location — avoids SauceDemo rate limiting
-  // cy.visit() triggers rate limiting; window.location navigates within existing session
+  // Navigate to inventory — always use window.location to avoid SauceDemo rate limiting
   const goToInventory = () => {
     cy.url().then((url) => {
       if (url.includes("checkout-complete")) {
         cy.get("[data-test='back-to-products']").click();
-      } else if (!url.includes("/inventory.html")) {
+      } else {
+        // Always navigate via window.location — even from inventory — to force full render
         cy.window().then((win) => {
           win.location.href = "https://www.saucedemo.com/inventory.html";
         });
