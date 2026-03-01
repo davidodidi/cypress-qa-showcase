@@ -47,7 +47,6 @@ jobs:
     strategy:
       fail-fast: false  # run all suites even if one fails
       matrix:
-        suite: [auth, ecommerce, api, todo]
         include:
           - suite: auth
             spec: "cypress/e2e/auth/**"
@@ -76,11 +75,12 @@ jobs:
         with:
           browser: chrome
           headed: false
-          spec: ${{ matrix.include.spec }}
+          spec: ${{ matrix.spec }}
           config: "video=true"
         env:
           CYPRESS_STANDARD_USER: ${{ secrets.CYPRESS_STANDARD_USER }}
           CYPRESS_PASSWORD:       ${{ secrets.CYPRESS_PASSWORD }}
+          CYPRESS_API_KEY:        ${{ secrets.CYPRESS_API_KEY }}
 
       - name: 📸 Upload screenshots on failure
         uses: actions/upload-artifact@v4
