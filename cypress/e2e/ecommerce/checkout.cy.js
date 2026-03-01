@@ -10,26 +10,30 @@ describe("🛒 E-Commerce — Product Browsing & Checkout", { testIsolation: fal
     cy.get(".inventory_list", { timeout: 30000 }).should("be.visible");
   });
 
-  // Always navigate via burger menu — most reliable way to reach inventory
-  // even if we're already on it, clicking All Items forces a clean render
+  // Navigate to inventory — close menu if open, then use burger menu to navigate
   const goToInventory = () => {
+    // If menu is currently open, close it first by pressing Escape
+    cy.get("body").then(($body) => {
+      const menuWrap = $body.find(".bm-menu-wrap");
+      if (menuWrap.length && menuWrap.attr("aria-hidden") === "false") {
+        cy.get("body").type("{esc}");
+        cy.wait(600);
+      }
+    });
+
     cy.url().then((url) => {
       if (url.includes("checkout-complete")) {
         cy.get("[data-test='back-to-products']").click();
-        cy.get(".inventory_list", { timeout: 15000 }).should("be.visible");
       } else {
-        // Wait for menu to be fully closed before trying to open it again
-        cy.get(".bm-menu-wrap").should("have.attr", "aria-hidden", "true");
-        cy.wait(500);
-        cy.get("#react-burger-menu-btn", { timeout: 10000 }).click({ force: true });
-        // Wait for menu to fully open
-        cy.get(".bm-menu-wrap", { timeout: 8000 }).should("have.attr", "aria-hidden", "false");
+        cy.wait(300);
+        cy.get("#react-burger-menu-btn").click({ force: true });
+        cy.wait(600);
         cy.get("#inventory_sidebar_link").click({ force: true });
-        // Wait for menu to close after clicking All Items
-        cy.get(".bm-menu-wrap").should("have.attr", "aria-hidden", "true");
-        cy.get(".inventory_list", { timeout: 15000 }).should("be.visible");
+        cy.wait(600);
       }
     });
+
+    cy.get(".inventory_list", { timeout: 15000 }).should("be.visible");
   };
 
   // Clear all items from cart if any exist
