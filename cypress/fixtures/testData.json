@@ -1,0 +1,85 @@
+{
+  "validUsers": {
+    "standard": {
+      "username": "standard_user",
+      "password": "secret_sauce",
+      "description": "Full access user"
+    },
+    "performance": {
+      "username": "performance_glitch_user",
+      "password": "secret_sauce",
+      "description": "Simulates slow network responses"
+    }
+  },
+  "invalidUsers": [
+    {
+      "username": "",
+      "password": "",
+      "expectedError": "Username is required",
+      "scenario": "empty credentials"
+    },
+    {
+      "username": "valid_user",
+      "password": "",
+      "expectedError": "Password is required",
+      "scenario": "missing password"
+    },
+    {
+      "username": "wrong_user",
+      "password": "wrong_pass",
+      "expectedError": "Username and password do not match",
+      "scenario": "wrong credentials"
+    }
+  ],
+  "lockedUser": {
+    "username": "locked_out_user",
+    "password": "secret_sauce",
+    "expectedError": "Sorry, this user has been locked out"
+  },
+  "products": {
+    "backpack": "Sauce Labs Backpack",
+    "bikeLight": "Sauce Labs Bike Light",
+    "boltShirt": "Sauce Labs Bolt T-Shirt",
+    "fleeceJacket": "Sauce Labs Fleece Jacket",
+    "onesie": "Sauce Labs Onesie",
+    "shirt": "Test.allTheThings() T-Shirt (Red)"
+  },
+  "checkout": {
+    "validInfo": {
+      "firstName": "David",
+      "lastName": "QA",
+      "postalCode": "M5V 3L9"
+    },
+    "missingFirstName": {
+      "firstName": "",
+      "lastName": "Tester",
+      "postalCode": "12345",
+      "expectedError": "First Name is required"
+    },
+    "missingLastName": {
+      "firstName": "David",
+      "lastName": "",
+      "postalCode": "12345",
+      "expectedError": "Last Name is required"
+    },
+    "missingPostal": {
+      "firstName": "David",
+      "lastName": "Tester",
+      "postalCode": "",
+      "expectedError": "Postal Code is required"
+    }
+  },
+  "apiUsers": {
+    "validRegister": {
+      "email": "eve.holt@reqres.in",
+      "password": "pistol"
+    },
+    "validLogin": {
+      "email": "eve.holt@reqres.in",
+      "password": "cityslicka"
+    },
+    "missingPassword": {
+      "email": "peter@klaven.com"
+    }
+  }
+}

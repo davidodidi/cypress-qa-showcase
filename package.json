@@ -1,0 +1,26 @@
+{
+  "name": "cypress-qa-automation-showcase",
+  "version": "1.0.0",
+  "description": "Production-grade QA Automation Showcase using Cypress + JavaScript — API, UI, POM, CI/CD",
+  "scripts": {
+    "cy:open": "cypress open",
+    "cy:run": "cypress run",
+    "cy:run:auth": "cypress run --spec 'cypress/e2e/auth/**'",
+    "cy:run:todo": "cypress run --spec 'cypress/e2e/todo/**'",
+    "cy:run:ecommerce": "cypress run --spec 'cypress/e2e/ecommerce/**'",
+    "cy:run:api": "cypress run --spec 'cypress/e2e/api/**'",
+    "cy:report": "cypress run --reporter mochawesome",
+    "lint": "eslint cypress/**/*.js"
+  },
+  "devDependencies": {
+    "cypress": "^13.6.0",
+    "eslint": "^8.55.0",
+    "eslint-plugin-cypress": "^2.15.1",
+    "mochawesome": "^7.1.3",
+    "mochawesome-merge": "^4.3.0",
+    "mochawesome-report-generator": "^6.2.0",
+    "@faker-js/faker": "^8.3.1"
+  },
+  "author": "David — QA Automation Engineer",
+  "license": "MIT"
+}
