@@ -10,9 +10,18 @@ describe("🛒 E-Commerce — Product Browsing & Checkout", { testIsolation: fal
     cy.get(".inventory_list", { timeout: 30000 }).should("be.visible");
   });
 
-  // Navigate to inventory using direct URL — reliable in CI, works within existing session
+  // Navigate to inventory using window.location — avoids SauceDemo rate limiting
+  // cy.visit() triggers rate limiting; window.location navigates within existing session
   const goToInventory = () => {
-    cy.visit("/inventory.html");
+    cy.url().then((url) => {
+      if (url.includes("checkout-complete")) {
+        cy.get("[data-test='back-to-products']").click();
+      } else if (!url.includes("/inventory.html")) {
+        cy.window().then((win) => {
+          win.location.href = "https://www.saucedemo.com/inventory.html";
+        });
+      }
+    });
     cy.get(".inventory_list", { timeout: 15000 }).should("be.visible");
     cy.get("[data-test='product_sort_container']", { timeout: 15000 }).should("be.visible");
   };
@@ -25,7 +34,9 @@ describe("🛒 E-Commerce — Product Browsing & Checkout", { testIsolation: fal
         cy.get(".cart_item button").each(($btn) => {
           cy.wrap($btn).click();
         });
-        cy.visit("/inventory.html");
+        cy.window().then((win) => {
+          win.location.href = "https://www.saucedemo.com/inventory.html";
+        });
         cy.get(".inventory_list").should("be.visible");
       }
     });
