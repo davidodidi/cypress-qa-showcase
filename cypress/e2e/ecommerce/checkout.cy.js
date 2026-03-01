@@ -10,29 +10,9 @@ describe("🛒 E-Commerce — Product Browsing & Checkout", { testIsolation: fal
     cy.get(".inventory_list", { timeout: 30000 }).should("be.visible");
   });
 
-  // Navigate to inventory — close menu if open, then use burger menu to navigate
+  // Navigate to inventory using direct URL — reliable in CI, works within existing session
   const goToInventory = () => {
-    // If menu is currently open, close it first by pressing Escape
-    cy.get("body").then(($body) => {
-      const menuWrap = $body.find(".bm-menu-wrap");
-      if (menuWrap.length && menuWrap.attr("aria-hidden") === "false") {
-        cy.get("body").type("{esc}");
-        cy.wait(600);
-      }
-    });
-
-    cy.url().then((url) => {
-      if (url.includes("checkout-complete")) {
-        cy.get("[data-test='back-to-products']").click();
-      } else {
-        cy.wait(300);
-        cy.get("#react-burger-menu-btn").click({ force: true });
-        cy.wait(600);
-        cy.get("#inventory_sidebar_link").click({ force: true });
-        cy.wait(600);
-      }
-    });
-
+    cy.visit("/inventory.html");
     cy.get(".inventory_list", { timeout: 15000 }).should("be.visible");
     cy.get("[data-test='product_sort_container']", { timeout: 15000 }).should("be.visible");
   };
@@ -45,9 +25,7 @@ describe("🛒 E-Commerce — Product Browsing & Checkout", { testIsolation: fal
         cy.get(".cart_item button").each(($btn) => {
           cy.wrap($btn).click();
         });
-        cy.get("#react-burger-menu-btn").click({ force: true });
-        cy.get("#inventory_sidebar_link").click();
-        cy.get(".bm-overlay").should("not.exist");
+        cy.visit("/inventory.html");
         cy.get(".inventory_list").should("be.visible");
       }
     });
