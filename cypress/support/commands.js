@@ -19,23 +19,24 @@ Cypress.Commands.add("loginUI", (userType = "standard") => {
 
   cy.visit("/");
   cy.get("[data-test='username']").type(username);
-cy.get("[data-test='password']").type(password, { log: false });
+  cy.get("[data-test='password']").type(password, { log: false }); // mask password in logs
   cy.get("[data-test='login-button']").click();
 });
 
 /**
- * Login via session — avoids re-running full login between tests (Cypress 12+)
+ * Login by setting the session cookie directly — fast and CI-stable.
+ * Avoids cy.session() page load timeouts on GitHub Actions.
  */
 Cypress.Commands.add("loginSession", (userType = "standard") => {
-  cy.session(
-    userType,
-    () => cy.loginUI(userType),
-    {
-      validate() {
-        cy.getCookie("session-username").should("exist");
-      },
-    }
-  );
+  const users = {
+    standard:    Cypress.env("STANDARD_USER"),
+    locked:      Cypress.env("LOCKED_USER"),
+    performance: Cypress.env("PERFORMANCE_USER"),
+  };
+  const username = users[userType] ?? userType;
+
+  // Set the session cookie directly — same as what SauceDemo sets after login
+  cy.setCookie("session-username", username);
   cy.visit("/inventory.html");
 });
 

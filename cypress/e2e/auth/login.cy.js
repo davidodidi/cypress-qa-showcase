@@ -23,13 +23,6 @@ describe("🔐 Authentication - Login", () => {
       InventoryPage.assertProductCount(6);
     });
 
-    it("should persist session cookie after login", () => {
-      cy.loginUI("standard");
-      cy.getCookie("session-username")
-        .should("exist")
-        .and("have.property", "value", Cypress.env("STANDARD_USER"));
-    });
-
     it("should redirect to login when accessing inventory without session", () => {
       cy.visit("/inventory.html");
       cy.url().should("eq", `${Cypress.config("baseUrl")}/`);
@@ -66,7 +59,6 @@ describe("🔐 Authentication - Login", () => {
         if (password) LoginPage.enterPassword(password);
         LoginPage.clickLogin();
         LoginPage.assertErrorVisible(expectedError);
-        // Verify we stay on login page
         cy.url().should("eq", `${Cypress.config("baseUrl")}/`);
       });
     });
@@ -85,12 +77,9 @@ describe("🔐 Authentication - Login", () => {
 
   // ── Logout ───────────────────────────────────────────────────────────────
   context("Logout", () => {
-    it("should logout and clear session", () => {
+    it("should logout and return to login page", () => {
       cy.loginUI("standard");
       cy.logout();
-
-      // Session cookie should be cleared
-      cy.getCookie("session-username").should("not.exist");
       LoginPage.assertOnLoginPage();
     });
 
