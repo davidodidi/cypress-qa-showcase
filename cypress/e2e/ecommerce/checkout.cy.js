@@ -4,10 +4,18 @@ import CheckoutPage from "../../support/pages/CheckoutPage";
 
 describe("🛒 E-Commerce — Product Browsing & Checkout", () => {
 
-  // Login ONCE before all tests — avoids hitting SauceDemo on every test
+  // Login ONCE for the entire suite — SauceDemo rate-limits CI runners
   before(() => {
-    cy.loginSession("standard");
+    cy.loginUI("standard");
   });
+
+  // Helper: go back to inventory without a full cy.visit()
+  const goToInventory = () => {
+    cy.window().then((win) => {
+      win.location.href = "/inventory.html";
+    });
+    cy.get(".inventory_list", { timeout: 15000 }).should("be.visible");
+  };
 
   // ── Product Catalog ───────────────────────────────────────────────────────
   context("Product Catalog", () => {
@@ -34,19 +42,19 @@ describe("🛒 E-Commerce — Product Browsing & Checkout", () => {
     });
 
     it("should navigate to product detail page", () => {
+      InventoryPage.sortBy("az"); // reset sort
       InventoryPage.openProductByName("Sauce Labs Backpack");
       cy.url().should("include", "/inventory-item.html");
       cy.get(".inventory_details_name").should("contain.text", "Sauce Labs Backpack");
       cy.get(".inventory_details_price").should("be.visible");
       cy.get(".inventory_details_img").should("be.visible");
+      goToInventory(); // back to inventory for next tests
     });
   });
 
   // ── Cart Management ───────────────────────────────────────────────────────
   context("Cart Management", () => {
-    beforeEach(() => {
-      cy.visit("/inventory.html");
-    });
+    beforeEach(goToInventory);
 
     it("should add a single product and update cart badge", () => {
       InventoryPage.addProductToCartByName("Sauce Labs Backpack");
@@ -79,7 +87,7 @@ describe("🛒 E-Commerce — Product Browsing & Checkout", () => {
   // ── Checkout Flow ─────────────────────────────────────────────────────────
   context("Checkout — Happy Path", () => {
     beforeEach(() => {
-      cy.visit("/inventory.html");
+      goToInventory();
       InventoryPage.addProductToCartByName("Sauce Labs Backpack");
       InventoryPage.goToCart();
       cy.get("[data-test='checkout']").click();
@@ -116,7 +124,7 @@ describe("🛒 E-Commerce — Product Browsing & Checkout", () => {
     ];
 
     beforeEach(() => {
-      cy.visit("/inventory.html");
+      goToInventory();
       InventoryPage.addProductToCartByName("Sauce Labs Onesie");
       InventoryPage.goToCart();
       cy.get("[data-test='checkout']").click();
