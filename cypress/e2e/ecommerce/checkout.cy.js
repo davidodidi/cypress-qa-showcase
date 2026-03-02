@@ -2,34 +2,48 @@
 import InventoryPage from "../../support/pages/InventoryPage";
 import CheckoutPage from "../../support/pages/CheckoutPage";
 
+// testIsolation: false — keeps session alive between tests (avoids SauceDemo rate limiting)
 describe("🛒 E-Commerce — Product Browsing & Checkout", { testIsolation: false }, () => {
 
+  // Login once for the entire suite
   before(() => {
     cy.loginUI("standard");
     cy.url().should("include", "/inventory.html");
     cy.get(".inventory_list", { timeout: 30000 }).should("be.visible");
   });
 
-  // Navigate to inventory via window.location — avoids SauceDemo rate limiting on cy.visit()
+  // Navigate to inventory via burger menu — stays within existing session
   const goToInventory = () => {
-    cy.window().then((win) => {
-      win.location.href = "https://www.saucedemo.com/inventory.html";
+    // Close menu if already open (can happen after retries or failed tests)
+    cy.get("body").then(($body) => {
+      if ($body.find(".bm-menu-wrap[aria-hidden='false']").length) {
+        cy.get("body").type("{esc}");
+        cy.wait(400);
+      }
+    });
+    // Handle checkout-complete page separately (no burger menu available)
+    cy.url().then((url) => {
+      if (url.includes("checkout-complete")) {
+        cy.get("[data-test='back-to-products']").click();
+      } else {
+        cy.get("#react-burger-menu-btn").click({ force: true });
+        cy.wait(400);
+        cy.get("#inventory_sidebar_link").click({ force: true });
+      }
     });
     cy.get(".inventory_list", { timeout: 15000 }).should("be.visible");
   };
 
-  // Clear all items from cart if any exist
+  // Clear any items in cart
   const clearCart = () => {
     cy.get("body").then(($body) => {
       if ($body.find(".shopping_cart_badge").length) {
         cy.get(".shopping_cart_link").click();
-        cy.get(".cart_item button").each(($btn) => {
-          cy.wrap($btn).click();
-        });
-        cy.window().then((win) => {
-          win.location.href = "https://www.saucedemo.com/inventory.html";
-        });
-        cy.get(".inventory_list").should("be.visible");
+        cy.get(".cart_item button").each(($btn) => cy.wrap($btn).click());
+        cy.get("#react-burger-menu-btn").click({ force: true });
+        cy.wait(400);
+        cy.get("#inventory_sidebar_link").click({ force: true });
+        cy.get(".inventory_list", { timeout: 10000 }).should("be.visible");
       }
     });
   };
@@ -37,7 +51,7 @@ describe("🛒 E-Commerce — Product Browsing & Checkout", { testIsolation: fal
   // ── Product Catalog ────────────────────────────────────────────────────────
   context("Product Catalog", () => {
 
-    beforeEach(() => {
+    before(() => {
       goToInventory();
     });
 
@@ -46,13 +60,11 @@ describe("🛒 E-Commerce — Product Browsing & Checkout", { testIsolation: fal
     });
 
     it("should sort products A → Z correctly", () => {
-      cy.get("[data-test='product_sort_container']", { timeout: 15000 }).should("be.visible");
       InventoryPage.sortBy("az");
       InventoryPage.assertSortedAlphaAsc();
     });
 
     it("should sort products Z → A correctly", () => {
-      cy.get("[data-test='product_sort_container']", { timeout: 15000 }).should("be.visible");
       InventoryPage.sortBy("za");
       InventoryPage.productNames.then(($names) => {
         const names = [...$names].map((el) => el.innerText);
@@ -61,13 +73,11 @@ describe("🛒 E-Commerce — Product Browsing & Checkout", { testIsolation: fal
     });
 
     it("should sort products by price low → high", () => {
-      cy.get("[data-test='product_sort_container']", { timeout: 15000 }).should("be.visible");
       InventoryPage.sortBy("lohi");
       InventoryPage.assertSortedPriceLowHigh();
     });
 
     it("should navigate to product detail page", () => {
-      cy.get("[data-test='product_sort_container']", { timeout: 15000 }).should("be.visible");
       InventoryPage.sortBy("az");
       InventoryPage.openProductByName("Sauce Labs Backpack");
       cy.url().should("include", "/inventory-item.html");
