@@ -8,23 +8,14 @@ describe("🛒 E-Commerce — Product Browsing & Checkout", { testIsolation: fal
     cy.loginUI("standard");
     cy.url().should("include", "/inventory.html");
     cy.get(".inventory_list", { timeout: 30000 }).should("be.visible");
-    cy.get("[data-test='product_sort_container']", { timeout: 30000 }).should("be.visible");
   });
 
-  // Navigate to inventory — always use window.location to avoid SauceDemo rate limiting
+  // Navigate to inventory via window.location — avoids SauceDemo rate limiting on cy.visit()
   const goToInventory = () => {
-    cy.url().then((url) => {
-      if (url.includes("checkout-complete")) {
-        cy.get("[data-test='back-to-products']").click();
-      } else {
-        // Always navigate via window.location — even from inventory — to force full render
-        cy.window().then((win) => {
-          win.location.href = "https://www.saucedemo.com/inventory.html";
-        });
-      }
+    cy.window().then((win) => {
+      win.location.href = "https://www.saucedemo.com/inventory.html";
     });
     cy.get(".inventory_list", { timeout: 15000 }).should("be.visible");
-    cy.get("[data-test='product_sort_container']", { timeout: 15000 }).should("be.visible");
   };
 
   // Clear all items from cart if any exist
@@ -55,11 +46,13 @@ describe("🛒 E-Commerce — Product Browsing & Checkout", { testIsolation: fal
     });
 
     it("should sort products A → Z correctly", () => {
+      cy.get("[data-test='product_sort_container']", { timeout: 15000 }).should("be.visible");
       InventoryPage.sortBy("az");
       InventoryPage.assertSortedAlphaAsc();
     });
 
     it("should sort products Z → A correctly", () => {
+      cy.get("[data-test='product_sort_container']", { timeout: 15000 }).should("be.visible");
       InventoryPage.sortBy("za");
       InventoryPage.productNames.then(($names) => {
         const names = [...$names].map((el) => el.innerText);
@@ -68,11 +61,13 @@ describe("🛒 E-Commerce — Product Browsing & Checkout", { testIsolation: fal
     });
 
     it("should sort products by price low → high", () => {
+      cy.get("[data-test='product_sort_container']", { timeout: 15000 }).should("be.visible");
       InventoryPage.sortBy("lohi");
       InventoryPage.assertSortedPriceLowHigh();
     });
 
     it("should navigate to product detail page", () => {
+      cy.get("[data-test='product_sort_container']", { timeout: 15000 }).should("be.visible");
       InventoryPage.sortBy("az");
       InventoryPage.openProductByName("Sauce Labs Backpack");
       cy.url().should("include", "/inventory-item.html");
