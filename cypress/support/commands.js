@@ -74,5 +74,5 @@ Cypress.Commands.add("assertError", (text) => {
 
 Cypress.Commands.add("sortProductsBy", (option) => {
   const map = { az: "az", za: "za", lohi: "lohi", hilo: "hilo" };
-  cy.get("[data-test='product_sort_container']").select(map[option]);
+  cy.get("[data-test='product-sort-container']").select(map[option]);
 });

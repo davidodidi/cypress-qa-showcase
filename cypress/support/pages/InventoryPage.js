@@ -7,7 +7,7 @@ class InventoryPage {
   get productItems()     { return cy.get(".inventory_item"); }
   get productNames()     { return cy.get(".inventory_item_name"); }
   get productPrices()    { return cy.get(".inventory_item_price"); }
-  get sortDropdown()     { return cy.get("[data-test='product_sort_container']"); }
+  get sortDropdown()     { return cy.get("[data-test='product-sort-container']"); }
   get cartBadge()        { return cy.get(".shopping_cart_badge"); }
   get cartIcon()         { return cy.get(".shopping_cart_link"); }
   get pageTitle()        { return cy.get(".title"); }
