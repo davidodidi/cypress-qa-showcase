@@ -2,7 +2,7 @@
 
 > A production-grade test automation framework built with **Cypress 13 + JavaScript**, demonstrating real-world SDET skills across UI testing, API testing, network interception, Page Object Model, and CI/CD with GitHub Actions.
 
-![CI](https://github.com/your-username/cypress-qa-showcase/actions/workflows/cypress.yml/badge.svg)
+![CI](https://github.com/davidodidi/cypress-qa-showcase/actions/workflows/cypress.yml/badge.svg)
 ![Cypress](https://img.shields.io/badge/Cypress-13.x-04C38E?logo=cypress)
 ![JavaScript](https://img.shields.io/badge/JavaScript-ES2021-F7DF1E?logo=javascript)
 ![Node](https://img.shields.io/badge/Node-20.x-339933?logo=node.js)
@@ -82,13 +82,13 @@ cypress-qa-showcase/
 |---|---|
 | **Page Object Model** | All UI specs — `LoginPage`, `InventoryPage`, `CheckoutPage` |
 | **Custom Commands** | `commands.js` (UI), `api.commands.js` (REST) |
-| **cy.session()** | Ecommerce suite — avoids redundant logins |
+| **testIsolation: false** | Ecommerce suite — single login shared across all tests to avoid SauceDemo CI rate limiting |
 | **Data-Driven Testing** | Auth invalid cases, checkout validation — `forEach` loops |
 | **Network Intercept** | Todo suite — spy, stub, modify in-flight requests |
 | **cy.task()** | Terminal logging for test start/failure |
 | **Retry Strategy** | `runMode: 2` in config — resilient CI execution |
 | **Performance Gates** | API suite asserts `res.duration < 3000` |
-| **Schema Validation** | API responses validated with `.to.have.all.keys()` |
+| **Schema Validation** | API responses validated with `.to.include.all.keys()` |
 
 ---
 
@@ -100,7 +100,7 @@ cypress-qa-showcase/
 
 ### Install
 ```bash
-git clone https://github.com/your-username/cypress-qa-showcase.git
+git clone https://github.com/davidodidi/cypress-qa-showcase.git
 cd cypress-qa-showcase
 npm install
 cp cypress.env.example.json cypress.env.json
@@ -140,6 +140,23 @@ The GitHub Actions workflow (`.github/workflows/cypress.yml`) provides:
 
 ---
 
+## ⚠️ Known Limitations
+
+### SauceDemo (UI / E-Commerce / Auth)
+SauceDemo rate-limits repeated page loads from CI runner IP addresses. To work around this:
+- The ecommerce suite uses `testIsolation: false` so the browser session persists across all 14 tests
+- Login happens once in a `before()` hook — not before every test
+- Navigation between tests uses the burger menu (☰ → All Items) rather than `cy.visit()`, which avoids triggering a new page load request
+- `cy.visit()` is only called once per suite run
+
+### ReqRes.in (API Suite)
+ReqRes.in enforces a **250 requests/day** limit on the free tier. If the CI pipeline has been triggered many times in a single day, the API suite may return `429 Too Many Requests` for some tests. The rate limit resets daily at **midnight UTC**. This is an external service constraint, not a framework issue.
+
+### ESLint — `no-unnecessary-waiting`
+The `cypress/no-unnecessary-waiting` ESLint rule is disabled in `.eslintrc.js`. The burger menu on SauceDemo uses CSS animations with no reliable completion signal, so intentional `cy.wait()` calls are necessary for stable headless execution.
+
+---
+
 ## 🛠️ Tech Stack
 
 | Tool | Version | Purpose |
@@ -160,9 +177,10 @@ The GitHub Actions workflow (`.github/workflows/cypress.yml`) provides:
 
 ## 👤 Author
 
-**David** — QA Automation Engineer  
-Java • Selenium • Cypress • RestAssured • Python • Playwright • CI/CD  
+**David Odidi** — QA Automation Engineer  
+Java • Selenium • Cypress • RestAssured • Python • CI/CD  
+[github.com/davidodidi](https://github.com/davidodidi)
 
 ---
 
-*This project is part of a QA Automation Portfolio - built to demonstrate production-level testing skills across multiple disciplines.*
+*This project is part of a QA Automation Portfolio — built to demonstrate production-level testing skills across multiple disciplines.*
