@@ -58,12 +58,12 @@ cypress-qa-showcase/
 - Checkout form validation (3 negative scenarios)
 
 ### 🔌 API Testing (`/api`)
-- `GET /users` — pagination, schema validation, field format
-- `GET /users/:id` — 200 and 404 handling
-- `POST /users` — 201, payload, timestamp freshness
-- `PUT /users/:id` — update and response contract
-- `DELETE /users/:id` — 204 and empty body
-- `POST /register` + `POST /login` — success and error flows
+- `GET /users` - pagination, schema validation, field format
+- `GET /users/:id` - 200 and 404 handling
+- `POST /users` - 201, payload, timestamp freshness
+- `PUT /users/:id` - update and response contract
+- `DELETE /users/:id` - 204 and empty body
+- `POST /register` + `POST /login` - success and error flows
 - Response time performance gates (< 3s)
 
 ### ✅ Network Intercept (`/todo`)
@@ -80,13 +80,13 @@ cypress-qa-showcase/
 
 | Pattern | Where Used |
 |---|---|
-| **Page Object Model** | All UI specs — `LoginPage`, `InventoryPage`, `CheckoutPage` |
+| **Page Object Model** | All UI specs - `LoginPage`, `InventoryPage`, `CheckoutPage` |
 | **Custom Commands** | `commands.js` (UI), `api.commands.js` (REST) |
-| **testIsolation: false** | Ecommerce suite — single login shared across all tests to avoid SauceDemo CI rate limiting |
-| **Data-Driven Testing** | Auth invalid cases, checkout validation — `forEach` loops |
-| **Network Intercept** | Todo suite — spy, stub, modify in-flight requests |
+| **testIsolation: false** | Ecommerce suite - single login shared across all tests to avoid SauceDemo CI rate limiting |
+| **Data-Driven Testing** | Auth invalid cases, checkout validation - `forEach` loops |
+| **Network Intercept** | Todo suite - spy, stub, modify in-flight requests |
 | **cy.task()** | Terminal logging for test start/failure |
-| **Retry Strategy** | `runMode: 2` in config — resilient CI execution |
+| **Retry Strategy** | `runMode: 2` in config - resilient CI execution |
 | **Performance Gates** | API suite asserts `res.duration < 3000` |
 | **Schema Validation** | API responses validated with `.to.include.all.keys()` |
 
@@ -130,8 +130,8 @@ npm run cy:report
 The GitHub Actions workflow (`.github/workflows/cypress.yml`) provides:
 
 - ✅ **Linting** on every push (ESLint + Cypress plugin)
-- ✅ **Parallel matrix execution** — 4 suites run simultaneously
-- ✅ **`fail-fast: false`** — all suites complete even if one fails
+- ✅ **Parallel matrix execution** - 4 suites run simultaneously
+- ✅ **`fail-fast: false`** - all suites complete even if one fails
 - ✅ **Screenshot upload** on failure
 - ✅ **Video upload** always (14-day retention)
 - ✅ **Nightly scheduled run** at 2:00 AM UTC
@@ -145,14 +145,14 @@ The GitHub Actions workflow (`.github/workflows/cypress.yml`) provides:
 ### SauceDemo (UI / E-Commerce / Auth)
 SauceDemo rate-limits repeated page loads from CI runner IP addresses. To work around this:
 - The ecommerce suite uses `testIsolation: false` so the browser session persists across all 14 tests
-- Login happens once in a `before()` hook — not before every test
+- Login happens once in a `before()` hook - not before every test
 - Navigation between tests uses the burger menu (☰ → All Items) rather than `cy.visit()`, which avoids triggering a new page load request
 - `cy.visit()` is only called once per suite run
 
 ### ReqRes.in (API Suite)
 ReqRes.in enforces a **250 requests/day** limit on the free tier. If the CI pipeline has been triggered many times in a single day, the API suite may return `429 Too Many Requests` for some tests. The rate limit resets daily at **midnight UTC**. This is an external service constraint, not a framework issue.
 
-### ESLint — `no-unnecessary-waiting`
+### ESLint - `no-unnecessary-waiting`
 The `cypress/no-unnecessary-waiting` ESLint rule is disabled in `.eslintrc.js`. The burger menu on SauceDemo uses CSS animations with no reliable completion signal, so intentional `cy.wait()` calls are necessary for stable headless execution.
 
 ---
@@ -166,21 +166,21 @@ The `cypress/no-unnecessary-waiting` ESLint rule is disabled in `.eslintrc.js`. 
 | Node.js | 20.x | Runtime |
 | Mochawesome | 7.x | HTML reporting |
 | ESLint | 8.x | Code quality |
-| GitHub Actions | — | CI/CD |
+| GitHub Actions | - | CI/CD |
 
 **Test Apps Used:**
-- [SauceDemo](https://www.saucedemo.com) — UI / Auth / E-Commerce
-- [ReqRes.in](https://reqres.in) — REST API testing
-- [JSONPlaceholder](https://jsonplaceholder.typicode.com) — Network intercept
+- [SauceDemo](https://www.saucedemo.com) - UI / Auth / E-Commerce
+- [ReqRes.in](https://reqres.in) - REST API testing
+- [JSONPlaceholder](https://jsonplaceholder.typicode.com) - Network intercept
 
 ---
 
 ## 👤 Author
 
-**David Odidi** — QA Automation Engineer  
-Java • Selenium • Cypress • RestAssured • Python • CI/CD  
+**David Odidi** - QA Automation Engineer  
+Java • Selenium • Playwright • Cypress • RestAssured • Python • CI/CD (Github Actions and Jenkins)  
 [github.com/davidodidi](https://github.com/davidodidi)
 
 ---
 
-*This project is part of a QA Automation Portfolio — built to demonstrate production-level testing skills across multiple disciplines.*
+*This project is part of a QA Automation Portfolio - built to demonstrate production-level testing skills across multiple disciplines.*
